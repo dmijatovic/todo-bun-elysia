@@ -28,3 +28,11 @@ Bun run --watch seem to be running also after using Ctrl+C. I am not sure how to
 # list
 netstat -tunap | grep LISTEN
 ```
+
+## Docker images
+
+I tried 3 versions:
+
+- Dokcerfile_bun: not compiled image is 324MB
+- Dockerfile_dist: compiled to single file is 277MB
+- Dockerfile_distroless: compiled, minified and used in distroless is 120MB

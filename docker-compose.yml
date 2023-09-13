@@ -23,8 +23,9 @@ services:
     container_name: todo-api
     build:
       context: .
-      dockerfile: Dockerfile_bun
-    image: dv4all/todo-bun-elysia:0.0.1
+      dockerfile: Dockerfile_distroless
+      # dockerfile: Dockerfile_bun
+    image: dv4all/todo-bun-elysia:0.0.4
     environment:
       API_PORT: 8080
       API_NAME: todo-bun-elysia

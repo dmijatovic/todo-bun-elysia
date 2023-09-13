@@ -1,28 +1,25 @@
-FROM debian:12-slim as builder
+# taken over from issue
+# https://github.com/oven-sh/bun/issues/4836
+
+# using default image for build
+FROM oven/bun:1.0.1 as build
+
+# define user
+ARG USERNAME=nonroot
+ARG USER_GROUP=nonroot
+RUN groupadd -g 10001 $USER_GROUP && useradd -m -u 10000 -g $USER_GROUP $USERNAME
+USER ${USERNAME}:${USER_GROUP}
 
 WORKDIR /app
 
-RUN apt update
-RUN apt install curl unzip -y
+COPY --chown=${USERNAME}:${USER_GROUP} . .
 
-RUN curl https://bun.sh/install | bash
+# install dependencies and build app
+RUN bun install --production --no-cache && bun build src/index.ts --compile --minify --outfile build/app
 
-COPY package.json .
-COPY bun.lockb .
+# use distroless image to run app - 120MB
+FROM gcr.io/distroless/base:nonroot
 
-RUN /root/.bun/bin/bun install --production
+COPY --from=build --chown=nonroot:nonroot /app/build .
 
-# -------------------------
-FROM gcr.io/distroless/base-debian12
-
-WORKDIR /app
-
-COPY --from=builder /root/.bun/bin/bun bun
-COPY --from=builder /app/node_modules node_modules
-
-COPY src src
-COPY tsconfig.json .
-# COPY public public
-
-ENV NODE_ENV production
-CMD ["./bun", "src/index.ts"]
+CMD ["./app"]
